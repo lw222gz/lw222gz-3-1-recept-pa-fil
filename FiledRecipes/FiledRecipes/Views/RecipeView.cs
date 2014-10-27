@@ -17,17 +17,17 @@ namespace FiledRecipes.Views
             Header = recipe.Name;
             ShowHeaderPanel();
 
-            Console.WriteLine("Ingredienser:");
+            Console.WriteLine("\nIngredienser:\n");
             foreach (Ingredient ingredient in recipe.Ingredients)
             {
                 Console.WriteLine(ingredient);
             }
 
-            Console.WriteLine("Instruktioner:");
+            Console.WriteLine("\nInstruktioner:");
             int Row = 1;
             foreach (string instruction in recipe.Instructions)
             {
-            Console.WriteLine("{0}, {1}", Row, instruction);
+            Console.WriteLine("\nSteg {0}: {1}", Row, instruction);
             Row++;
             }
         }

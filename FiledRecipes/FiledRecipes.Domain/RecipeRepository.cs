@@ -133,45 +133,47 @@ namespace FiledRecipes.Domain
         {
             List<IRecipe> recipes = new List<IRecipe>();
        
-            using (StreamReader read = new StreamReader("Recipes.txt"))
+            using (StreamReader read = new StreamReader(_path))
             {
                 string reader;
                 Recipe FullRecipe = null;
-                RecipeReadStatus RecipeEnum = new RecipeReadStatus(); // ett enum, Indefinite, New, Ingredient, Instruction
+                RecipeReadStatus RecipeEnum = RecipeReadStatus.Indefinite; // ett enum, Indefinite, New, Ingredient, Instruction
 
-
+                
                 while((reader = read.ReadLine()) != null)
                 {
-                    if (reader == SectionRecipe)
-                    {
-                        RecipeEnum = RecipeReadStatus.New;
-                    }
-
-                    else if (reader == SectionIngredients)
-                    {
-                        RecipeEnum = RecipeReadStatus.Ingredient;
-                    }
-
-                    else if (reader == SectionInstructions)
-                    {
-                        RecipeEnum = RecipeReadStatus.Instruction;
-                    }
-
-
-                    else
-                    {
-                        switch (RecipeEnum)
+                    if (reader != "") // kollar om tomt 
+                    { 
+                        if (reader == SectionRecipe)
                         {
+                            RecipeEnum = RecipeReadStatus.New;
+                        }
 
-                            case RecipeReadStatus.New:
+                        else if (reader == SectionIngredients)
+                        {
+                            RecipeEnum = RecipeReadStatus.Ingredient;
+                        }
 
-                                FullRecipe = new Recipe(reader);
+                        else if (reader == SectionInstructions)
+                        {
+                            RecipeEnum = RecipeReadStatus.Instruction;
+                        }
+
+
+                        else
+                        {
+                            switch (RecipeEnum)
+                            {
+
+                                case RecipeReadStatus.New:
+
+                                    FullRecipe = new Recipe(reader);
                                     recipes.Add(FullRecipe);
-                                    
+
                                     break;
 
-                            case RecipeReadStatus.Ingredient:                              
-                                
+                                case RecipeReadStatus.Ingredient:
+
                                     string[] ingredients = reader.Split(new char[] { ';' }, StringSplitOptions.None);
 
                                     if (ingredients.Length % 3 != 0)
@@ -186,23 +188,21 @@ namespace FiledRecipes.Domain
 
                                     FullRecipe.Add(ingredient);
                                     break;
-                                
 
-                            case RecipeReadStatus.Instruction:
-                                
+
+                                case RecipeReadStatus.Instruction:
+
                                     FullRecipe.Add(reader);
                                     break;
 
-                            default:                                
+                                case RecipeReadStatus.Indefinite:
                                     throw new FileFormatException();
-                                
+                            }  
                         }
                     }                    
                 }
-                recipes.Add(FullRecipe);
-
                 recipes.TrimExcess();
-
+                               
                 _recipes = recipes.OrderBy(recipe => recipe.Name).ToList();
 
                 IsModified = false;
@@ -215,24 +215,28 @@ namespace FiledRecipes.Domain
 
         public void Save()
         { 
-            using (StreamWriter writer = new StreamWriter("Recipes.txt"))
+            using (StreamWriter writer = new StreamWriter(_path))
             {
                 foreach (Recipe recipe in _recipes)  //för var recept i listan
                 {
                     writer.WriteLine(SectionRecipe);
                     writer.WriteLine(recipe.Name);   // skriver ut recept namn
+
                     writer.WriteLine(SectionIngredients);
                     foreach (Ingredient ingredient in recipe.Ingredients) // skriver ut ingredienser
                     {
-                        writer.WriteLine("{0}{1}{2}", ingredient.Amount, ingredient.Measure, ingredient.Name);
+                        writer.WriteLine("{0};{1};{2}", ingredient.Amount, ingredient.Measure, ingredient.Name);
                     }
-                    writer.WriteLine(SectionInstructions);
 
+                    writer.WriteLine(SectionInstructions);
                     foreach (string details in recipe.Instructions) //skriver ut instruktioner
                     {
                         writer.WriteLine(details);
                     }
                 }
+                IsModified = false;
+
+                OnRecipesChanged(EventArgs.Empty);
             }
         }
     }
