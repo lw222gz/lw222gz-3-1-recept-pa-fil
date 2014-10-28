@@ -167,9 +167,8 @@ namespace FiledRecipes.Domain
 
                                 case RecipeReadStatus.New:
 
-                                    FullRecipe = new Recipe(reader);
-                                    recipes.Add(FullRecipe);
-
+                                    FullRecipe = new Recipe(reader);                // skapar ett nytt objekt varje gång den läser in 
+                                    recipes.Add(FullRecipe);                        // ett nytt recept namn.
                                     break;
 
                                 case RecipeReadStatus.Ingredient:
@@ -192,7 +191,7 @@ namespace FiledRecipes.Domain
 
                                 case RecipeReadStatus.Instruction:
 
-                                    FullRecipe.Add(reader);
+                                    FullRecipe.Add(reader);                 
                                     break;
 
                                 case RecipeReadStatus.Indefinite:
@@ -217,19 +216,19 @@ namespace FiledRecipes.Domain
         { 
             using (StreamWriter writer = new StreamWriter(_path))
             {
-                foreach (Recipe recipe in _recipes)  //för var recept i listan
+                foreach (IRecipe recipe in _recipes)  //för var recept i listan
                 {
                     writer.WriteLine(SectionRecipe);
-                    writer.WriteLine(recipe.Name);   // skriver ut recept namn
+                    writer.WriteLine(recipe.Name);   // skriver in recept namn
 
                     writer.WriteLine(SectionIngredients);
-                    foreach (Ingredient ingredient in recipe.Ingredients) // skriver ut ingredienser
+                    foreach (IIngredient ingredient in recipe.Ingredients) //skriver in ingredienser
                     {
                         writer.WriteLine("{0};{1};{2}", ingredient.Amount, ingredient.Measure, ingredient.Name);
                     }
 
                     writer.WriteLine(SectionInstructions);
-                    foreach (string details in recipe.Instructions) //skriver ut instruktioner
+                    foreach (string details in recipe.Instructions) //skriver in instruktioner
                     {
                         writer.WriteLine(details);
                     }
